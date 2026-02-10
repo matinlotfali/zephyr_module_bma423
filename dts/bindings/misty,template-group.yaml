@@ -1,0 +1,9 @@
+compatible: "misty,template-group"
+
+description: Demo for passing multiple instances to module.
+
+properties:
+  mw_templates:
+    type: phandle-array
+    required: true
+    description: Array of phandles to instance nodes.
