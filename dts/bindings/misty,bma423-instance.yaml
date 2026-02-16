@@ -1,4 +1,4 @@
-compatible: "misty,template-instance"
+compatible: "misty,bma423-instance"
 
 description: Individual instance configuration.
 

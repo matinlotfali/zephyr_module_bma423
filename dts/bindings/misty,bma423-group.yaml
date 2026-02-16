@@ -1,9 +1,9 @@
-compatible: "misty,template-group"
+compatible: "misty,bma423-group"
 
 description: Demo for passing multiple instances to module.
 
 properties:
-  mw_templates:
+  mw_bma423s:
     type: phandle-array
     required: true
     description: Array of phandles to instance nodes.

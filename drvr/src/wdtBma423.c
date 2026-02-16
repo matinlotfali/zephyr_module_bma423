@@ -1,5 +1,5 @@
 /**
- * @file wdtTemplate.c
+ * @file wdtBma423.c
  * @date 20250526
  * @author flynnty
  * @copyright flynnty 2025
@@ -10,7 +10,7 @@
  */
 
 /**** Includes ********************************************************************************************************/
-#include "wdtTemplate.h"
+#include "wdtBma423.h"
 #include <zephyr/logging/log.h>
 #include <zephyr/task_wdt/task_wdt.h>
 
@@ -18,12 +18,12 @@
 /**** Types ***********************************************************************************************************/
 /**** Variables *******************************************************************************************************/
 static int wdtTaskId = -1;
-static const uint32_t wdtTimeoutMs = ( CONFIG_APP_TEMPLATE_WDT_TIMEOUT_S * MSEC_PER_SEC );
+static const uint32_t wdtTimeoutMs = ( CONFIG_BMA423_WDT_TIMEOUT_S * MSEC_PER_SEC );
 
 /**** Macros **********************************************************************************************************/
-LOG_MODULE_DECLARE( template_main, CONFIG_APP_TEMPLATE_LOG_LEVEL );
+LOG_MODULE_DECLARE( bma423_main, CONFIG_BMA423_LOG_LEVEL );
 
-BUILD_ASSERT( CONFIG_APP_TEMPLATE_WDT_TIMEOUT_S > CONFIG_APP_TEMPLATE_MSGQ_TIMEOUT_S, "Watchdog timeout must be greater than trigger timeout" );
+BUILD_ASSERT( CONFIG_BMA423_WDT_TIMEOUT_S > CONFIG_BMA423_MSGQ_TIMEOUT_S, "Watchdog timeout must be greater than trigger timeout" );
 
 /**** Prototypes ******************************************************************************************************/
 
@@ -42,7 +42,7 @@ void wdtTimeoutCb( int chanId, void *userData )
     LOG_ERR( "Watchdog expired, Channel: %d, Thread: %s", chanId, k_thread_name_get( (k_tid_t)userData ) );
 }
 
-int wdtTemplateInit()
+int wdtBma423Init()
 {
     int ret = ERR_OK;
 
@@ -56,7 +56,7 @@ int wdtTemplateInit()
     return ERR_OK;
 }
 
-int wdtTemplateFeed()
+int wdtBma423Feed()
 {
     int ret = ERR_OK;
 

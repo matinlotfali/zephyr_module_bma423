@@ -1,40 +1,91 @@
-menu "TEMPLATE"
+menuconfig BMA423
+	bool "BMA423 Accelerometer Driver"
+	default n
+	depends on I2C
 
-config APP_TEMPLATE_PRIORITY
+if BMA423
+
+config BMA423_INIT_PRIORITY
+	int "Init Thread Priority"
+	default 91
+
+config BMA423_STEP_COUNTER
+	bool "Enable step counter (pedometer)"
+	default y
+	help
+	  Enable the step counter feature. This allows tracking steps
+	  even when the device is in deep sleep, making it ideal for
+	  fitness tracking applications.
+
+config BMA423_ACTIVITY_RECOGNITION
+	bool "Enable activity recognition"
+	default y
+	help
+	  Enable activity recognition feature to detect user activity:
+	  - Still (stationary)
+	  - Walking
+	  - Running
+
+	  Activity changes can trigger interrupts for responsive UI updates.
+
+config BMA423_TILT_DETECTION
+	bool "Enable tilt-on-wrist detection"
+	default n
+	help
+	  Enable tilt-on-wrist detection feature. This detects when the
+	  user tilts their wrist to view the watch, useful for waking the
+	  display on gesture.
+
+config BMA423_TRIGGER
+	bool "Enable interrupt support"
+	depends on GPIO
+	default y
+	help
+	  Enable interrupt support for BMA423. This allows asynchronous
+	  notification of sensor events such as:
+	  - Data ready
+	  - Step counter watermark
+	  - Activity change
+	  - Tilt detection
+	  - FIFO watermark/full
+
+	  Both INT1 and INT2 pins are supported with flexible mapping.
+
+config BMA423_PRIORITY
 	int "Thread Priority"
 	default 3
 
-config APP_TEMPLATE_DELAY_START_MS
+config BMA423_DELAY_START_MS
 	int "Thread start delay ms"
 	default 0
 
-config APP_TEMPLATE_STACK_SIZE
+config BMA423_STACK_SIZE
 	int "Thread stack size"
 	default 1024
 
-config APP_TEMPLATE_MSGQ_SIZE
+config BMA423_MSGQ_SIZE
 	int "Message queue size"
 	default 5
 
-config APP_TEMPLATE_MSGQ_ALIGN
+config BMA423_MSGQ_ALIGN
 	int "Power of 2 msg queue byte alignment"
 	default 4
 
-config APP_TEMPLATE_WDT_TIMEOUT_S
+config BMA423_WDT_TIMEOUT_S
 	int "Watchdog timeout seconds"
 	default 2
 
-config APP_TEMPLATE_MSGQ_TIMEOUT_S
+config BMA423_MSGQ_TIMEOUT_S
 	int "Wait for message timeout seconds"
 	default 1
 
-config APP_TEMPLATE_SHELL
+config BMA423_SHELL
 	bool "Enable Template Shell Console"
 	default n
 
 # https://docs.zephyrproject.org/latest/services/logging/index.html#logging-in-a-module
-module = APP_TEMPLATE
-module-str = TEMPLATE
+module = BMA423
+module-str = BMA423
 source "subsys/logging/Kconfig.template.log_config"
 
-endmenu # TEMPLATE
+endif # BMA423

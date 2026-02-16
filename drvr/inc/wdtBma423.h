@@ -1,5 +1,5 @@
 /**
- * @file wdtTemplate.h
+ * @file wdtBma423.h
  * @date 20250526
  * @author flynnty
  * @copyright flynnty 2025
@@ -24,11 +24,11 @@
  *
  * @return int
  */
-int wdtTemplateInit();
+int wdtBma423Init();
 
 /**
  * @brief Feed WDT
  *
  * @return int
  */
-int wdtTemplateFeed();
+int wdtBma423Feed();

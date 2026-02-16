@@ -1,5 +1,5 @@
 /**
- * @file msgqTemplate.h
+ * @file msgqBma423.h
  * @date 20250526
  * @author flynnty
  * @copyright flynnty 2025
@@ -18,19 +18,18 @@
 
 typedef enum
 {
-    MSGQ_TYPE_ZBUS_TEMPLATE_VAL_SET = 0,
-    MSGQ_TYPE_ZBUS_TEMPLATE_VAL_PUB,
+    MSGQ_TYPE_BMA423_REQ = 0,
     MSGQ_TYPE_COUNT
-} MsgqTemplateMsgType;
+} MsgqBma423MsgType;
 
 typedef struct
 {
-    MsgqTemplateMsgType type;
+    MsgqBma423MsgType type;
     union
     {
         ZbusMsgContainer zbus;
     } msg;
-} MsgqTemplateMsgContainer;
+} MsgqBma423MsgContainer;
 
 /**** Variables *******************************************************************************************************/
 /**** Macros **********************************************************************************************************/
@@ -41,11 +40,11 @@ typedef struct
  *
  * @return struct k_msgq*
  */
-struct k_msgq *msgqTemplate( void );
+struct k_msgq *msgqBma423( void );
 
 /**
  * @brief Process Module Work Q
  *
  * @return int
  */
-int msgqTemplateProc( void );
+int msgqBma423Proc( void );
