@@ -11,6 +11,7 @@
 
 /**** Includes ********************************************************************************************************/
 #include "wdtBma423.h"
+#include "zbusCommon.h"
 #include <zephyr/logging/log.h>
 #include <zephyr/task_wdt/task_wdt.h>
 
@@ -40,6 +41,13 @@ static void wdtTimeoutCb( int chanId, void *userData );
 void wdtTimeoutCb( int chanId, void *userData )
 {
     LOG_ERR( "Watchdog expired, Channel: %d, Thread: %s", chanId, k_thread_name_get( (k_tid_t)userData ) );
+
+    // Delete the watchdog task to prevent repeating the timeout callback.
+    task_wdt_delete( wdtTaskId );
+
+    // Inform other threads
+    ZbusMsgWdt msg = { .sourceThreadId = (k_tid_t)userData };
+    zbus_chan_pub( &ZBUS_CHAN_WDT_FAULT_SUB, &msg, K_NO_WAIT );
 }
 
 int wdtBma423Init()

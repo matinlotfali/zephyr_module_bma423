@@ -44,7 +44,20 @@ static int bma423Main( void )
     // Populate bma4_dev runtime fields (chip_id, resolution, variant).
     // Required on every boot because the struct is in regular RAM, not RTC memory.
     // This is just one I2C read — no soft reset, config write, or step counter reset.
-    RETURN_ON_ERROR( bma423_init( bmaDevGet() ) );
+    struct bma4_dev *dev = bmaDevGet();
+    RETURN_ON_ERROR( bma423_init( dev ) );
+
+    // Re-cache the feature config base address from the BMA423 hardware.
+    // The BMA423 retains this in registers 0x5B/0x5C across ESP32 deep sleep,
+    // but the dev->asic_data cache in RAM is lost on every reboot.
+    // Without this, feature config operations (e.g. step counter reset) corrupt
+    // the address pointer by writing {0,0} to 0x5B/0x5C.
+    uint8_t asicLsb = 0;
+    uint8_t asicMsb = 0;
+    RETURN_ON_ERROR( bma4_read_regs( BMA4_RESERVED_REG_5B_ADDR, &asicLsb, 1, dev ) );
+    RETURN_ON_ERROR( bma4_read_regs( BMA4_RESERVED_REG_5C_ADDR, &asicMsb, 1, dev ) );
+    dev->asic_data.asic_lsb = asicLsb & 0x0F;
+    dev->asic_data.asic_msb = asicMsb;
 
     while( true ) {
         RETURN_ON_ERROR( wdtBma423Feed() );

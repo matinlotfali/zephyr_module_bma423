@@ -5,41 +5,10 @@ menuconfig BMA423
 
 if BMA423
 
-config BMA423_INIT_PRIORITY
-	int "Init Thread Priority"
-	default 91
-
-config BMA423_STEP_COUNTER
-	bool "Enable step counter (pedometer)"
-	default y
-	help
-	  Enable the step counter feature. This allows tracking steps
-	  even when the device is in deep sleep, making it ideal for
-	  fitness tracking applications.
-
-config BMA423_ACTIVITY_RECOGNITION
-	bool "Enable activity recognition"
-	default y
-	help
-	  Enable activity recognition feature to detect user activity:
-	  - Still (stationary)
-	  - Walking
-	  - Running
-
-	  Activity changes can trigger interrupts for responsive UI updates.
-
-config BMA423_TILT_DETECTION
-	bool "Enable tilt-on-wrist detection"
-	default n
-	help
-	  Enable tilt-on-wrist detection feature. This detects when the
-	  user tilts their wrist to view the watch, useful for waking the
-	  display on gesture.
-
-config BMA423_TRIGGER
+config BMA423_INTERRUPTS
 	bool "Enable interrupt support"
 	depends on GPIO
-	default y
+	default n
 	help
 	  Enable interrupt support for BMA423. This allows asynchronous
 	  notification of sensor events such as:
@@ -48,7 +17,6 @@ config BMA423_TRIGGER
 	  - Activity change
 	  - Tilt detection
 	  - FIFO watermark/full
-
 	  Both INT1 and INT2 pins are supported with flexible mapping.
 
 config BMA423_PRIORITY
@@ -61,7 +29,7 @@ config BMA423_DELAY_START_MS
 
 config BMA423_STACK_SIZE
 	int "Thread stack size"
-	default 1024
+	default 2048
 
 config BMA423_MSGQ_SIZE
 	int "Message queue size"
@@ -73,7 +41,7 @@ config BMA423_MSGQ_ALIGN
 
 config BMA423_WDT_TIMEOUT_S
 	int "Watchdog timeout seconds"
-	default 2
+	default 3
 
 config BMA423_MSGQ_TIMEOUT_S
 	int "Wait for message timeout seconds"

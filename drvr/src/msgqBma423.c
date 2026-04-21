@@ -20,6 +20,10 @@
 #include <zephyr/logging/log.h>
 
 /**** Defines *********************************************************************************************************/
+
+// Full uint8_t range (256) used for correcting Bosch API sign extension bug in temperature reading
+#define BMA4_TEMP_UINT8_RANGE ( UINT8_MAX + 1 )
+
 /**** Types ***********************************************************************************************************/
 /**** Variables *******************************************************************************************************/
 
@@ -137,6 +141,12 @@ static int bma423SamplePublish( ZbusMsgTypeBma423 sampleMask )
     if( sampleMask & ZBUS_MSG_TYPE_BMA423_TEMP ) {
         int32_t tempMilli = 0;
         LOG_ON_ERROR( bma4_get_temperature( &tempMilli, BMA4_DEG, dev ) );
+
+        // Workaround: Bosch API reads temp register as uint8_t but it's signed.
+        // Values below 23°C get a 256°C offset due to missing sign extension.
+        if( tempMilli > ( INT8_MAX + BMA4_OFFSET_TEMP ) * BMA4_SCALE_TEMP ) {
+            tempMilli -= BMA4_TEMP_UINT8_RANGE * BMA4_SCALE_TEMP;
+        }
         zbusMsg.tempMilli = tempMilli;
     }
 
@@ -181,17 +191,21 @@ static int bma423FullInit( void )
     RETURN_ON_ERROR( bma4_set_accel_enable( BMA4_ENABLE, dev ) );
     RETURN_ON_ERROR( bma423_set_remap_axes( &remapConfig, dev ) );
 
-    // Enable features
-    RETURN_ON_ERROR( bma423_step_detector_enable( BMA4_ENABLE, dev ) );
+    // Enable features (accel must be configured and enabled BEFORE features)
     RETURN_ON_ERROR( bma423_feature_enable( BMA423_STEP_CNTR, true, dev ) );
+    RETURN_ON_ERROR( bma423_feature_enable( BMA423_ACTIVITY, true, dev ) );
     RETURN_ON_ERROR( bma423_feature_enable( BMA423_TILT, true, dev ) );
     RETURN_ON_ERROR( bma423_feature_enable( BMA423_WAKEUP, true, dev ) );
 
-    // Reset step counter and map interrupts
+    RETURN_ON_ERROR( bma423_select_platform( BMA423_WRIST_CONFIG, dev ) );
     RETURN_ON_ERROR( bma423_reset_step_counter( dev ) );
+
+#ifdef CONFIG_BMA423_INTERRUPTS
     RETURN_ON_ERROR( bma423_map_interrupt( BMA4_INTR1_MAP, BMA423_STEP_CNTR_INT, BMA4_ENABLE, dev ) );
+    RETURN_ON_ERROR( bma423_map_interrupt( BMA4_INTR1_MAP, BMA423_ACTIVITY_INT, BMA4_ENABLE, dev ) );
     RETURN_ON_ERROR( bma423_map_interrupt( BMA4_INTR1_MAP, BMA423_TILT_INT, BMA4_ENABLE, dev ) );
     RETURN_ON_ERROR( bma423_map_interrupt( BMA4_INTR1_MAP, BMA423_WAKEUP_INT, BMA4_ENABLE, dev ) );
+#endif // CONFIG_BMA423_INTERRUPTS
 
     LOG_INF( "BMA423 Initialized." );
     return ERR_OK;
