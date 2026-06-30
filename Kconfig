@@ -2,6 +2,7 @@ menuconfig BMA423
 	bool "BMA423 Accelerometer Driver"
 	default n
 	depends on I2C
+	select APP_SENSOR
 
 if BMA423
 

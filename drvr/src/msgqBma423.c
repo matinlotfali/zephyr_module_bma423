@@ -61,7 +61,7 @@ K_MSGQ_DEFINE( MsgqBma423, sizeof( MsgqBma423MsgContainer ), CONFIG_BMA423_MSGQ_
 
 static int bma423FullInit( void );
 static int bma423ResetSteps( void );
-static int bma423SamplePublish( ZbusMsgTypeBma423 sampleMask );
+static int bma423SamplePublish( ZbusMsgTypeSensor sampleMask );
 
 /**** Definitions *****************************************************************************************************/
 
@@ -83,19 +83,19 @@ int msgqBma423Proc( void )
     }
 
     __ASSERT( msgq.type == MSGQ_TYPE_BMA423_REQ, "msgq.type must be MSGQ_TYPE_BMA423_REQ" );
-    __ASSERT( msgq.msg.zbus.type == ZBUS_TYPE_BMA423, "msgq.msg.zbus.type must be ZBUS_TYPE_BMA423" );
+    __ASSERT( msgq.msg.zbus.type == ZBUS_TYPE_SENSOR, "msgq.msg.zbus.type must be ZBUS_TYPE_SENSOR" );
 
     // Here we have a valid message to process
-    switch( msgq.msg.zbus.msg.bma423.mask ) {
-    case ZBUS_MSG_TYPE_BMA423_RESET_STEPS:
+    switch( msgq.msg.zbus.msg.sensor.mask ) {
+    case ZBUS_MSG_TYPE_SENSOR_RESET_STEPS:
         RETURN_ON_ERROR( bma423ResetSteps() );
         break;
-    case ZBUS_MSG_TYPE_BMA423_INIT:
+    case ZBUS_MSG_TYPE_SENSOR_INIT:
         RETURN_ON_ERROR( bma423FullInit() );
         break;
     default:
-        if( msgq.msg.zbus.msg.bma423.mask < ZBUS_MSG_TYPE_BMA423_INVALID ) {
-            RETURN_ON_ERROR( bma423SamplePublish( msgq.msg.zbus.msg.bma423.mask ) );
+        if( msgq.msg.zbus.msg.sensor.mask < ZBUS_MSG_TYPE_SENSOR_INVALID ) {
+            RETURN_ON_ERROR( bma423SamplePublish( msgq.msg.zbus.msg.sensor.mask ) );
         } else {
             LOG_ERR( "Unknown message type: %d", msgq.type );
         }
@@ -107,15 +107,15 @@ int msgqBma423Proc( void )
 
 /**** Static Functions ************************************************************************************************/
 
-static int bma423SamplePublish( ZbusMsgTypeBma423 sampleMask )
+static int bma423SamplePublish( ZbusMsgTypeSensor sampleMask )
 {
     struct bma4_dev *dev = bmaDevGet();
-    ZbusMsgBma423 zbusMsg = { .mask = sampleMask };
+    ZbusMsgSensor zbusMsg = { .mask = sampleMask };
 
     LOG_DBG( "BMA423 sample requested: 0x%x", sampleMask );
 
     // Read accelerometer XYZ
-    if( sampleMask & ZBUS_MSG_TYPE_BMA423_ACCEL ) {
+    if( sampleMask & ZBUS_MSG_TYPE_SENSOR_ACCEL ) {
         struct bma4_accel accel = { 0 };
         LOG_ON_ERROR( bma4_read_accel_xyz( &accel, dev ) );
         zbusMsg.accelX = accel.x;
@@ -124,21 +124,21 @@ static int bma423SamplePublish( ZbusMsgTypeBma423 sampleMask )
     }
 
     // Read step counter
-    if( sampleMask & ZBUS_MSG_TYPE_BMA423_STEPS ) {
+    if( sampleMask & ZBUS_MSG_TYPE_SENSOR_STEPS ) {
         uint32_t stepCount = 0;
         LOG_ON_ERROR( bma423_step_counter_output( &stepCount, dev ) );
         zbusMsg.steps = stepCount;
     }
 
     // Read activity
-    if( sampleMask & ZBUS_MSG_TYPE_BMA423_ACTIVITY ) {
+    if( sampleMask & ZBUS_MSG_TYPE_SENSOR_ACTIVITY ) {
         uint8_t activity = 0;
         LOG_ON_ERROR( bma423_activity_output( &activity, dev ) );
         zbusMsg.activity = activity;
     }
 
     // Read temperature in degrees Celsius (Bosch API returns milli-Celsius with BMA4_DEG)
-    if( sampleMask & ZBUS_MSG_TYPE_BMA423_TEMP ) {
+    if( sampleMask & ZBUS_MSG_TYPE_SENSOR_TEMP ) {
         int32_t tempMilli = 0;
         LOG_ON_ERROR( bma4_get_temperature( &tempMilli, BMA4_DEG, dev ) );
 
@@ -151,7 +151,7 @@ static int bma423SamplePublish( ZbusMsgTypeBma423 sampleMask )
     }
 
     // Publish results to SUB channel
-    RETURN_ON_ERROR( zbus_chan_pub( &ZBUS_CHAN_BMA423_SUB, &zbusMsg, K_NO_WAIT ) );
+    RETURN_ON_ERROR( zbus_chan_pub( &ZBUS_CHAN_SENSOR_SUB, &zbusMsg, K_NO_WAIT ) );
 
     LOG_DBG( "BMA423 sample published: X=%d Y=%d Z=%d steps=%u act=%u temp=%d", zbusMsg.accelX, zbusMsg.accelY, zbusMsg.accelZ, zbusMsg.steps,
              zbusMsg.activity, zbusMsg.tempMilli );

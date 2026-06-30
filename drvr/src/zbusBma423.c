@@ -27,7 +27,7 @@ static void zbusListenerCb( const struct zbus_channel *chan );
 LOG_MODULE_DECLARE( bma423_main, CONFIG_BMA423_LOG_LEVEL );
 
 ZBUS_LISTENER_DEFINE( bma423_thread_lis, zbusListenerCb );
-ZBUS_CHAN_ADD_OBS( ZBUS_CHAN_BMA423_REQ, bma423_thread_lis, 0 );
+ZBUS_CHAN_ADD_OBS( ZBUS_CHAN_SENSOR_REQ, bma423_thread_lis, 0 );
 
 /**** Definitions *****************************************************************************************************/
 
@@ -36,10 +36,10 @@ void zbusListenerCb( const struct zbus_channel *chan )
     MsgqBma423MsgContainer msgq = { 0 };
     int ret = ERR_OK;
 
-    if( chan == &ZBUS_CHAN_BMA423_REQ ) {
+    if( chan == &ZBUS_CHAN_SENSOR_REQ ) {
         msgq.type = MSGQ_TYPE_BMA423_REQ;
-        msgq.msg.zbus.type = ZBUS_TYPE_BMA423;
-        msgq.msg.zbus.msg.bma423 = *(ZbusMsgBma423 *)zbus_chan_const_msg( chan );
+        msgq.msg.zbus.type = ZBUS_TYPE_SENSOR;
+        msgq.msg.zbus.msg.sensor = *(ZbusMsgSensor *)zbus_chan_const_msg( chan );
         ret = k_msgq_put( msgqBma423(), &msgq, K_NO_WAIT );
     }
 
